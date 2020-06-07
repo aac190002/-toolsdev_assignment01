@@ -13,7 +13,7 @@ def user_keyword ():
     Ask user for a keyword
     :return: the keyword
     """
-    userinput = input("Enter a keyword: ")
+    userinput = input("Please enter any keyword (press enter to continue): ")
     return userinput
 
 if __name__ == '__main__':
