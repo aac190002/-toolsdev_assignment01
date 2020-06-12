@@ -9,6 +9,7 @@ ATCM 3311.0U1
 import nltk
 import newspaper
 import progressbar
+import sys
 
 # CONSTS
 SOURCES = [
@@ -26,8 +27,8 @@ def user_keyword ():
     Ask user for a keyword
     :return: the keyword
     """
-    print("", flush=True)
-    userinput = input("Please enter any keyword (press enter to continue): ")
+    print("Please enter any keyword (press enter to continue): ", end='', file=sys.stderr)
+    userinput = input("")
     return userinput
 
 
@@ -39,10 +40,10 @@ def get_articles():
     newspapers = [newspaper.build(url, memoize_articles=False) for url in SOURCES]
     articles = [][:]
     for i, paper in enumerate(newspapers):
-        print("Scraping " + SOURCES[i] + " ...", flush=True)
+        print("Scraping " + SOURCES[i] + " ...", file=sys.stderr)
         articles.extend(paper.articles)
     articles = articles[0::10]  # TODO delete
-    print("Found %d articles." % len(articles), flush=True)
+    print("Found %d articles." % len(articles), file=sys.stderr)
     return articles
 
 
@@ -52,7 +53,7 @@ def process_articles(articles):
     :param articles: List of Articles
     :return: Processed list of Articles
     """
-    print("Processing articles ...", flush=True)
+    print("Processing articles ...", file=sys.stderr)
     good_articles = [][:]
     failures = 0
     for article in progressbar.progressbar(articles):
@@ -63,7 +64,7 @@ def process_articles(articles):
             good_articles.append(article)
         except newspaper.ArticleException:
             failures += 1
-    print("%d of %d articles failed to process." % (failures, len(articles)), flush=True)
+    print("%d of %d articles failed to process." % (failures, len(articles)), file=sys.stderr)
     return good_articles
 
 
@@ -74,7 +75,7 @@ def filter_articles(articles, keyword):
     :param keyword: Filtering keyword
     :return: Filtered list of Articles
     """
-    print("Filtering ...", flush=True)
+    print("Filtering ...", file=sys.stderr)
 
     def filter_function(article):
         keywords = [word.lower() for word in article.keywords]
@@ -91,7 +92,7 @@ if __name__ == '__main__':
     # Get articles
     articles = get_articles()
     for x in articles:  # TODO delete
-        print(x.url)  # TODO delete
+        print(x.url, file=sys.stderr)  # TODO delete
 
     # Process articles
     articles = process_articles(articles)
@@ -99,9 +100,9 @@ if __name__ == '__main__':
     # Filter by keyword
     if keyword:
         articles = filter_articles(articles, keyword)
-    print(len(articles))  # TODO delete
+    print(len(articles), file=sys.stderr)  # TODO delete
     for x in articles:  # TODO delete
-        print(x.url)  # TODO delete
+        print(x.url, file=sys.stderr)  # TODO delete
 
     # Save article summaries
 
