@@ -17,6 +17,7 @@ SOURCES = [
     u"https://www.mentalfloss.com/",
     u"https://www.wired.com/"
 ]
+OUTFILE = "../news_summary.txt"
 
 # SETUP
 nltk.download('punkt')
@@ -42,7 +43,7 @@ def get_articles():
     for i, paper in enumerate(newspapers):
         print("Scraping " + SOURCES[i] + " ...", file=sys.stderr)
         articles.extend(paper.articles)
-    articles = articles[0::10]  # TODO delete
+    articles = articles[0::50]  # TODO delete
     print("Found %d articles." % len(articles), file=sys.stderr)
     return articles
 
@@ -71,9 +72,9 @@ def process_articles(articles):
 def filter_articles(articles, keyword):
     """
     Filters articles by keyword
-    :param articles: List of Articles
+    :param articles: List of processed Articles
     :param keyword: Filtering keyword
-    :return: Filtered list of Articles
+    :return: Filtered, processed list of Articles
     """
     print("Filtering ...", file=sys.stderr)
 
@@ -84,6 +85,33 @@ def filter_articles(articles, keyword):
 
     good_articles = list(filter(filter_function, articles))
     return good_articles
+
+
+def save_articles(articles):
+    """
+    Save the filtered articles to OUTFILE
+    :param articles: Filtered, processed list of Articles
+    :return: None
+    """
+    with open(OUTFILE, "w") as outfile:
+        for article in articles:
+            outfile.write(article.title)
+            outfile.write(" - ")
+
+            # Comma separated author list
+            first_author = True
+            for author in article.authors:
+                if first_author:
+                    first_author = False
+                else:
+                    outfile.write(", ")
+                outfile.write(author)
+
+            outfile.write("\n")
+            outfile.write(article.summary)
+            outfile.write("\n")
+            outfile.write("\n")
+
 
 if __name__ == '__main__':
     # Ask user for keyword input
@@ -105,6 +133,7 @@ if __name__ == '__main__':
         print(x.url, file=sys.stderr)  # TODO delete
 
     # Save article summaries
+    save_articles(articles)
 
     # Extra feature
 
