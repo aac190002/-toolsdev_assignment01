@@ -19,6 +19,7 @@ This script requires the following additional Python 3 modules:
 	- gathernews.py - the main Python 3 script
 	- page_template.html - template for the extra feature, an HTML page with clickable links
 	- card_template.html - template for the extra feature, HTML cards with clickable links
+- .gitignore - list of paths for GitHub to ignore, such as venv and .idea
 - github.txt - has a link to the GitHub page for this project
 - news_summary.txt - text output as specified in the instructions
 - readme.txt - this file
