@@ -8,8 +8,10 @@ ATCM 3311.0U1
 # IMPORTS
 import nltk
 import newspaper
+import os
 import progressbar
 import sys
+import webbrowser
 
 # CONSTS
 SOURCES = [
@@ -18,6 +20,9 @@ SOURCES = [
     u"https://www.wired.com/"
 ]
 OUTFILE = "../news_summary.txt"
+PAGE_TEMPLATE = "page_template.html"
+CARD_TEMPLATE = "card_template.html"
+OUTHTML = "../yournews.html"
 
 # SETUP
 nltk.download('punkt')
@@ -41,9 +46,10 @@ def get_articles():
     newspapers = [newspaper.build(url, memoize_articles=False) for url in SOURCES]
     articles = [][:]
     for i, paper in enumerate(newspapers):
-        print("Scraping " + SOURCES[i] + " ...", file=sys.stderr)
+        print("Scraping " + SOURCES[i] + " ...", end='', file=sys.stderr)
         articles.extend(paper.articles)
-    articles = articles[0::50]  # TODO delete
+        print(" %d found." % len(paper.articles), file=sys.stderr)
+    articles = articles[0::70]  # TODO delete
     print("Found %d articles." % len(articles), file=sys.stderr)
     return articles
 
@@ -84,6 +90,8 @@ def filter_articles(articles, keyword):
         return keyword_lower in keywords
 
     good_articles = list(filter(filter_function, articles))
+    print("%d articles match filter." % len(good_articles), file=sys.stderr)
+
     return good_articles
 
 
@@ -93,6 +101,7 @@ def save_articles(articles):
     :param articles: Filtered, processed list of Articles
     :return: None
     """
+    print("Saving article summaries.", file=sys.stderr)
     with open(OUTFILE, "w") as outfile:
         for article in articles:
             outfile.write(article.title)
@@ -113,14 +122,60 @@ def save_articles(articles):
             outfile.write("\n")
 
 
+def html_page(articles, keyword):
+    """
+    Extra feature: Make an HTML summary page of the articles with pictures and links using Bootstrap
+    Uses the top_image feature in newspaper3k
+
+    https://getbootstrap.com/
+
+    :param articles: Filtered, processed list of Articles
+    :param keyword: the keyword
+    :return: None
+    """
+    # Internal function to fix non-ASCII characters:
+    def fix_ascii(text):
+        return text.encode('ascii', 'xmlcharrefreplace').decode("utf-8")
+
+    print("Generating custom HTML page.", file=sys.stderr)
+
+    with open(CARD_TEMPLATE, "r") as cardfile:
+        card_template = cardfile.read()
+    with open(PAGE_TEMPLATE, "r") as pagefile:
+        page_template = pagefile.read()
+
+    # Make a card for each article
+    card_content = ""
+    for article in articles:
+        # Need to escape unicode characters
+        tmp_card = card_template.format(image=article.top_image,
+                                        title=fix_ascii(article.title),
+                                        link=article.url)
+        card_content += tmp_card
+
+    # Save page
+    if keyword:
+        keyword_text = " - " + keyword
+    else:
+        keyword_text = ""
+    # Need to escape unicode characters
+    page_content = page_template.format(keyword=fix_ascii(keyword_text),
+                                        keyword2=fix_ascii(keyword_text),
+                                        content=card_content)
+    with open(OUTHTML, "w") as outhtml:
+        outhtml.write(page_content)
+
+    # Open page
+    html_path = os.path.abspath(OUTHTML)
+    webbrowser.open_new_tab(html_path)
+
+
 if __name__ == '__main__':
     # Ask user for keyword input
     keyword = user_keyword()
 
     # Get articles
     articles = get_articles()
-    for x in articles:  # TODO delete
-        print(x.url, file=sys.stderr)  # TODO delete
 
     # Process articles
     articles = process_articles(articles)
@@ -128,13 +183,13 @@ if __name__ == '__main__':
     # Filter by keyword
     if keyword:
         articles = filter_articles(articles, keyword)
-    print(len(articles), file=sys.stderr)  # TODO delete
-    for x in articles:  # TODO delete
-        print(x.url, file=sys.stderr)  # TODO delete
 
     # Save article summaries
     save_articles(articles)
 
-    # Extra feature
+    # Extra feature - Make HTML sumnmary page with links
+    html_page(articles, keyword)
+
+    print("Done.", file=sys.stderr)
 
     pass
