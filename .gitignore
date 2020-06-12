@@ -1,3 +1,6 @@
+# Ignore demo video
+demo.mov
+
 # Ignore PyCharm files
 .idea
 
