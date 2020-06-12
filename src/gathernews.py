@@ -49,7 +49,6 @@ def get_articles():
         print("Scraping " + SOURCES[i] + " ...", end='', file=sys.stderr)
         articles.extend(paper.articles)
         print(" %d found." % len(paper.articles), file=sys.stderr)
-    articles = articles[0::70]  # TODO delete
     print("Found %d articles." % len(articles), file=sys.stderr)
     return articles
 
